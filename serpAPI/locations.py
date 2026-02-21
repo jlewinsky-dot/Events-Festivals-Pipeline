@@ -1,7 +1,9 @@
 sites = {
     'Fusionsite Nashville':[
         'Nashville, TN' ,
-        'Knoxville, TN'
+        'Knoxville, TN',
+        'Memphis, TN',
+        'Chattanooga, TN'
         ]
 }
 

@@ -8,7 +8,7 @@ load_dotenv()
 client = OpenAI()
 
 
-def extract_contact_info(home_html, contact_html=None):
+def extract_contact_info(event_title, home_html, contact_html=None):
     content = f"HOMEPAGE:\n{home_html}"
     if contact_html:
         content += f"\n\nCONTACT PAGE:\n{contact_html}"
@@ -20,8 +20,11 @@ def extract_contact_info(home_html, contact_html=None):
             {
                 "role": "system",
                 "content": (
-                    "Extract contact information from the provided website text. "
+                    f"You are extracting contact information for the event organizer of '{event_title}'. "
                     "Return a JSON object with these keys: email, phone, mailing_address in this exact order. "
+                    "Only return info that belongs to the event organizer, NOT the venue or ticketing platform. "
+                    "email must be a valid email address, not a person's name. "
+                    "mailing_address must be a postal or mailing address explicitly labeled as such, not an event venue address. "
                     "Only return info you can clearly see on the page. "
                     "Do not guess or make anything up. "
                     "Use null for any field you cannot find."
@@ -41,7 +44,7 @@ def extract_contact_info(home_html, contact_html=None):
 def fill_missing_fields(event_title, location, contact_info):
     # For any null fields, search Google and ask GPT to extract the missing info.
     fields = ["email", "phone", "mailing_address"]
-    
+
     for i, field in enumerate(fields):
         if contact_info[i] is not None:  # already have it, skip
             continue
@@ -71,8 +74,11 @@ def fill_missing_fields(event_title, location, contact_info):
                 {
                     "role": "system",
                     "content": (
-                        f"Extract the {field.replace('_', ' ')} for {event_title} from the search results below. "
+                        f"Extract the {field.replace('_', ' ')} for the event organizer of '{event_title}' from the search results below. "
                         f"Return a JSON object with one key: {field}. "
+                        "Only return info that belongs to the event organizer, NOT the venue or ticketing platform. "
+                        "email must be a valid email address, not a person's name. "
+                        "mailing_address must be a postal or mailing address, not an event venue address. "
                         "Only return info you can clearly see. "
                         "Do not guess or make anything up. "
                         "Use null if you cannot find it."
