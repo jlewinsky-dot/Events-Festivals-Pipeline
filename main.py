@@ -1,7 +1,6 @@
 from serpAPI.get_serp import get_serp_events
 from serpAPI.locations import sites
 import logging
-import os
 import csv
 
 logging.basicConfig(level=logging.INFO)

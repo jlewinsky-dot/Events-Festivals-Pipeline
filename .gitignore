@@ -1,15 +1,29 @@
+# Environment / Secrets
 .env
-__pycache__/
-venv/
+.env.*
+*.pem
+*.key
+
 # Python
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
+venv/
+.venv/
+
+# Output CSVs (may contain client data)
+*.csv
+
 # macOS
 .DS_Store
+
 # IDE
 .vscode/
+.idea/
+
 # Test results
 .pytest_cache/
+
 # Jupyter
 .ipynb_checkpoints/

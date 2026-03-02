@@ -5,10 +5,10 @@ from .locations import sites
 from .outdoor import is_outdoor_event
 from .organizer_site_url import get_organizer_url
 from .get_contact_page_url import get_contact_page
-from .get_contact_information import extract_contact_info, fill_missing_fields
+from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
 
 
-def get_serp_events(sites):
+def get_serp_events(sites:list) -> list:
     load_dotenv()
     all_events = []
     seen = set()
@@ -65,6 +65,7 @@ def get_serp_events(sites):
                                 if contact_page_url[1]:  # only call LLM if we got homepage HTML
                                     contact_information = extract_contact_info(key, contact_page_url[1], contact_page_url[2])
                                     contact_information = fill_missing_fields(key, location, contact_information)
+                                    contact_information = search_missing_fields(key, location, contact_information)
                                 else:
                                     contact_information = [None, None, None]
                             except Exception as e:
