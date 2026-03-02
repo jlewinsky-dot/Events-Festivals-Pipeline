@@ -1,17 +1,15 @@
 import serpapi
 import os
 from dotenv import load_dotenv
-from .locations import sites
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from .outdoor import is_outdoor_event
-from .organizer_site_url import get_organizer_url
-from .get_contact_page_url import get_contact_page
-from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
+from .processing import process_event
 
-
-def get_serp_events(locations:list) -> list:
+def get_serp_events(locations: list) -> list:
     load_dotenv()
     all_events = []
     seen = set()
+    outdoor_events = []  # collecting outdoor events first, processing concurrently after
 
     for location in locations:
         queries = [  # Queries to loop through
@@ -22,7 +20,7 @@ def get_serp_events(locations:list) -> list:
 
         for query in queries:  # loop through each query
             start = 0
-            while start < 25:
+            while start < 50:
                 try:
                     results = serpapi.GoogleSearch({
                         "engine": "google_events",
@@ -48,43 +46,26 @@ def get_serp_events(locations:list) -> list:
                     seen.add(key)  # if not seen, add to seen
 
                     if is_outdoor_event(event.get("title", "")):
-                        try:
-                            url = get_organizer_url(f"{key},{location}")
-                        except Exception as e:
-                            print(f"Failed to get organizer URL for '{key}': {e}")
-                            url = None
-
-                        try:
-                            contact_page_url = get_contact_page(url)
-                        except Exception as e:
-                            print(f"Failed to get contact page for '{key}': {e}")
-                            contact_page_url = [None, None, None]
-
-                        try:
-                            if contact_page_url[1]:  # only call LLM if we got homepage HTML
-                                contact_information = extract_contact_info(key, contact_page_url[1], contact_page_url[2])
-                                contact_information = fill_missing_fields(key, location, contact_information)
-                                contact_information = search_missing_fields(key, location, contact_information)
-                            else:
-                                contact_information = [None, None, None]
-                        except Exception as e:
-                            print(f"Failed to extract contact info for '{key}': {e}")
-                            contact_information = [None, None, None]
-
-                        event = {
-                            "title": event.get("title"),
-                            "date": event.get("date", {}).get("when"),
-                            "address": ", ".join(event.get("address", [])),
-                            "url": url,
-                            'contact_page': contact_page_url[0],
-                            'email': contact_information[0],
-                            'phone': contact_information[1],
-                            'mailing_address': contact_information[2]
-                        }
-
-                        print(event)
-                        all_events.append(event)
+                        outdoor_events.append((event, location))
 
                 start += 10
+
+    # now process all the outdoor events concurrently with thread pool
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        # submit returns a Future immediately so it doesnt block
+        futures = {
+            executor.submit(process_event, event, location): event.get("title")
+            for event, location in outdoor_events
+        }
+
+        # as_completed gives us results as they finish, not in the order we submitted them
+        for future in as_completed(futures):
+            title = futures[future]
+            try:
+                result = future.result()  # grabbing return value from process_event
+                print(result)
+                all_events.append(result)
+            except Exception as e:
+                print(f"Event processing failed for '{title}': {e}")
 
     return all_events
