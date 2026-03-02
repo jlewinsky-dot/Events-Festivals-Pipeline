@@ -7,10 +7,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def main():
+    # for each site, I am getting serp events and writing to csv
     for site in sites:
         logger.info(f"Starting pipeline for {site}")
         logger.info("Fetching Serp events")
-        serp_events = get_serp_events({site: sites[site]})
+        serp_events = get_serp_events(sites[site])
         logger.info("Finished fetching Serp events")
 
         filename = f"{site.replace(' ', '_').lower()}_events.csv"

@@ -15,7 +15,7 @@ BLOCKLIST = {
     "hauntpay.com",
 }
 
-
+# This function is just searching for the event organizers or realated event website
 def get_organizer_url(event_title):
     load_dotenv()
     query = f"{event_title}, official site"
@@ -29,10 +29,12 @@ def get_organizer_url(event_title):
     except Exception as e:
         print(f"SerpAPI search failed for '{event_title}': {e}")
         return None
-
+    
     for result in results.get("organic_results", [])[:5]:
         try:
+            # Stripping out the slug
             domain = urlparse(result["link"]).netloc.replace("www.", "")
+            # If the domain not in blocklist, return that url
             if domain not in BLOCKLIST:
                 return result["link"]
         except Exception as e:

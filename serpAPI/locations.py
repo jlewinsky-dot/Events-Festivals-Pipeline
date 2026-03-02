@@ -1,5 +1,7 @@
 sites = {
-    'A Clean PortoCo': ['Eagle Pass, TX', 'Laredo, TX', 'Harlingen, TX', 'San Antonio, TX'],
+    'A Clean PortoCo': ['Eagle Pass, TX', 'Laredo, TX', 'Harlingen, TX', 'San Antonio, TX']
+    }
+'''
     'A John': ['Poughkeepsie, NY'],
     'A Sani Can': ['Charlotte, NC', 'Greensboro, NC'],
     'A1 Porta Potty': ['New Albany, IN'],
@@ -39,6 +41,7 @@ sites = {
     'Stranders Sanitary': ['Lodi, WI'],
     'The Bolles Company': ['Chattanooga, TN'],
     'Versatile Industries': ['Midland, TX', 'Dallas, TX'],
-}
 
 # stores export tab - Marketing footprint
+
+'''

@@ -33,10 +33,10 @@ def find_contact_link(soup, base_url):
 def try_common_paths(browser, base_url): # Looking through common contact slugs if no contact link from find contact link
     for path in COMMON_PATHS:
         url = urljoin(base_url, path)
-        page = browser.new_page()
-        resp = page.goto(url, timeout=10000)
-        status = resp.status if resp else 0
-        page.close()
+        page = browser.new_page() # Playwright is the browser here
+        resp = page.goto(url, timeout=10000) # attempts to go to page to see if exists
+        status = resp.status if resp else 0 # get status
+        page.close() # close tab
         if status == 200: # If we get a contact page, return url
             return url
 

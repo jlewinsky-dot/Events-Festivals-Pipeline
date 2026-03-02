@@ -1,2 +1,5 @@
 serpapi
 python-dotenv
+openai
+playwright
+beautifulsoup4
