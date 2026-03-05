@@ -16,7 +16,9 @@ def main():
 
         filename = f"{site.replace(' ', '_').lower()}_events.csv"
         with open(filename, 'w', newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=["title", "date", "address", "url", "contact_page", "email", "phone", "mailing_address"])
+            writer = csv.DictWriter(f, fieldnames=["title", "date", "address", "url", "contact_page", "email", "email_confidence", 
+                                                   #"phone", "mailing_address"
+                                                   ])
             writer.writeheader()
             writer.writerows(serp_events)
 

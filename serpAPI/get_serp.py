@@ -17,7 +17,7 @@ def get_serp_events(locations: list) -> list:
             f"fairs {location}",
             f"outdoor events {location}",
         ]
-
+        count = 0
         for query in queries:  # loop through each query
             start = 0
             while start < 50:
@@ -40,7 +40,9 @@ def get_serp_events(locations: list) -> list:
                 for event in events:
                     key = event.get("title")  # Creating key for deduplicaton amoung queries
 
-                    if key in seen:  # if event in seen events, skip
+                    if key in seen:
+                        count += 1
+                          # if event in seen events, skip
                         continue
 
                     seen.add(key)  # if not seen, add to seen
@@ -67,5 +69,5 @@ def get_serp_events(locations: list) -> list:
                 all_events.append(result)
             except Exception as e:
                 print(f"Event processing failed for '{title}': {e}")
-
+    print(count)
     return all_events

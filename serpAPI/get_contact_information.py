@@ -25,7 +25,7 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> l
                     f"You are extracting contact information for the event organizer of '{event_title}'. "
                     "Return a JSON object with these keys: email, phone, mailing_address in this exact order. "
                     "Only return info that belongs to the event organizer, NOT the venue or ticketing platform. "
-                    "email must be a valid email address, not a person's name. "
+                    "email must be a valid email address belonging to the event organizer, not the venue, not a ticketing platform, not a person's name. "
                     "mailing_address must be a postal or mailing address explicitly labeled as such, not an event venue address. "
                     "Only return info you can clearly see on the page. "
                     "Do not guess or make anything up. "
@@ -40,6 +40,9 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> l
     )
 
     result = json.loads(response.choices[0].message.content)
+    email = result.get("email")
+    if email and "[email protected]" in email.lower():
+        email = None
     return [result.get("email"), result.get("phone"), result.get("mailing_address")]
 
 def fill_missing_fields(event_title, location, contact_info):
