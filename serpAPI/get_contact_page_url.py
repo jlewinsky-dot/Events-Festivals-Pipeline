@@ -1,6 +1,9 @@
+import logging
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Error as PlaywrightError
+
+logger = logging.getLogger(__name__)
 
 
 CONTACT_KEYWORDS = ["contact", "about", "get in touch", "reach us", "connect",
@@ -75,6 +78,6 @@ def get_contact_page(url):
                 page.close()
             browser.close()
         return [contact_url, clean_html(home_html), clean_html(contact_html) if contact_html else None]
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
+    except PlaywrightError as e:
+        logger.error(f"Error fetching {url}: {e}")
         return [None, None, None]

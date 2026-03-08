@@ -1,7 +1,13 @@
+import logging
+from requests.exceptions import RequestException
+from playwright.sync_api import Error as PlaywrightError
+from openai import APIError
 from .organizer_site_url import get_organizer_url
 from .get_contact_page_url import get_contact_page
 from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
 from .email_validation import email_confidence
+
+logger = logging.getLogger(__name__)
 
 
 # will run on its own thread
@@ -10,8 +16,8 @@ def process_event(event, location):
 
     try:
         url = get_organizer_url(f"{key},{location}")
-    except Exception as e:
-        print(f"Failed to get organizer URL for '{key}': {e}")
+    except RequestException as e:
+        logger.error(f"Failed to get organizer URL for '{key}': {e}")
         url = None
 
     if not url:
@@ -26,8 +32,9 @@ def process_event(event, location):
 
     try:
         contact_page_url = get_contact_page(url)
-    except Exception as e:
-        print(f"Failed to get contact page for '{key}': {e}")
+        
+    except PlaywrightError as e:
+        logger.error(f"Failed to get contact page for '{key}': {e}")
         contact_page_url = [None, None, None]
 
     try:
@@ -37,8 +44,8 @@ def process_event(event, location):
             contact_information = search_missing_fields(key, location, contact_information)
         else:
             contact_information = [None, None, None]
-    except Exception as e:
-        print(f"Failed to extract contact info for '{key}': {e}")
+    except APIError as e:
+        logger.error(f"Failed to extract contact info for '{key}': {e}")
         contact_information = [None, None, None]
     address = ", ".join(event.get("address", []))
     return {

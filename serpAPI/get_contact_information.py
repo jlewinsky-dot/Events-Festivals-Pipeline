@@ -1,3 +1,4 @@
+import logging
 from openai import OpenAI
 from dotenv import load_dotenv
 import serpapi
@@ -5,6 +6,8 @@ import os
 import json
 from playwright.sync_api import sync_playwright
 from .get_contact_page_url import clean_html
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 client = OpenAI()
@@ -144,6 +147,6 @@ def search_missing_fields(event_title, location, contact_info):
             if contact_info[i] is None:
                 contact_info[i] = result.get(field)
     except json.JSONDecodeError:
-        print(f"Failed to parse search response for '{event_title}'")
+        logger.error(f"Failed to parse search response for '{event_title}'")
 
     return contact_info

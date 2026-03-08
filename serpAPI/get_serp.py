@@ -1,9 +1,13 @@
 import serpapi
 import os
+import logging
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from requests.exceptions import RequestException
 from .outdoor import is_outdoor_event
 from .processing import process_event
+
+logger = logging.getLogger(__name__)
 
 def get_serp_events(locations: list) -> list:
     load_dotenv()
@@ -32,8 +36,8 @@ def get_serp_events(locations: list) -> list:
                         "api_key": os.getenv("SERPAPI_KEY"),
                         "start": start
                     }).get_dict()
-                except Exception as e:
-                    print(f"SerpAPI request failed for '{query}' start={start}: {e}")
+                except RequestException as e:
+                    logger.error(f"SerpAPI request failed for '{query}' start={start}: {e}")
                     break
 
                 events = results.get("events_results", [])  # Gettings events from API response
@@ -56,9 +60,9 @@ def get_serp_events(locations: list) -> list:
 
                 start += 10
 
-    # now process all the outdoor events concurrently with thread pool
+    #  process all the outdoor events with thread pool
     with ThreadPoolExecutor(max_workers=5) as executor:
-        # submit returns a Future immediately so it doesnt block
+        
         futures = {
             executor.submit(process_event, event, location): event.get("title")
             for event, location in outdoor_events
@@ -69,9 +73,9 @@ def get_serp_events(locations: list) -> list:
             title = futures[future]
             try:
                 result = future.result()  # grabbing return value from process_event
-                print(result)
+                logger.info(result)
                 all_events.append(result)
             except Exception as e:
-                print(f"Event processing failed for '{title}': {e}")
-    print(count)
+                logger.error(f"Event processing failed for '{title}': {type(e).__name__}: {e}")
+    logger.info(f"Duplicates skipped: {count}")
     return all_events

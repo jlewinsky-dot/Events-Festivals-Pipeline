@@ -1,6 +1,8 @@
 from openai import OpenAI
 import json
 
+# UNUSED FOR NOW
+'''
 def email_confidence(email, event_title, organizer_url, venue_address):
     client = OpenAI()
     if not email:
@@ -48,3 +50,4 @@ def email_confidence(email, event_title, organizer_url, venue_address):
 
     result = json.loads(response.choices[0].message.content)
     return result.get("confidence")
+'''

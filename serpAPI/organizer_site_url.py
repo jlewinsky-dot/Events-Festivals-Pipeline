@@ -1,7 +1,11 @@
 import serpapi
 import os
+import logging
 from dotenv import load_dotenv
 from urllib.parse import urlparse
+from requests.exceptions import RequestException
+
+logger = logging.getLogger(__name__)
 
 BLOCKLIST = {
     # Ticketing
@@ -29,8 +33,8 @@ def get_organizer_url(event_title):
             "q": query,
             "api_key": os.getenv("SERPAPI_KEY"),
         }).get_dict()
-    except Exception as e:
-        print(f"SerpAPI search failed for '{event_title}': {e}")
+    except RequestException as e:
+        logger.error(f"SerpAPI search failed for '{event_title}': {e}")
         return None
     
     for result in results.get("organic_results", [])[:5]:
@@ -40,8 +44,8 @@ def get_organizer_url(event_title):
             # If the domain not in blocklist, return that url
             if domain not in BLOCKLIST:
                 return result["link"]
-        except Exception as e:
-            print(f"Failed to parse result link for '{event_title}': {e}")
+        except ValueError as e:
+            logger.error(f"Failed to parse result link for '{event_title}': {e}")
             continue
 
     return None
