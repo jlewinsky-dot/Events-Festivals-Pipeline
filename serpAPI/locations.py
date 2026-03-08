@@ -1,5 +1,6 @@
 sites = {
-    'FusionSite Nashville': ['Nashville, TN']
+    'Arkansas Portable Toilets': ['Little Rock, AR', 'Fayetteville, AR'],
+    'Freedom Waste': ['Port St. Lucie, FL', 'Miami, FL']
     }
 '''
     'A Clean PortoCo': ['Eagle Pass, TX', 'Laredo, TX', 'Harlingen, TX', 'San Antonio, TX'],

@@ -16,11 +16,15 @@ def get_serp_events(locations: list) -> list:
             f"festivals {location}",
             f"fairs {location}",
             f"outdoor events {location}",
+            f"marathon {location}",
+            f"rodeo {location}",
+            f"parade {location}",
+            f"tailgate {location}"
         ]
         count = 0
         for query in queries:  # loop through each query
             start = 0
-            while start < 50:
+            while start < 2000:
                 try:
                     results = serpapi.GoogleSearch({
                         "engine": "google_events",

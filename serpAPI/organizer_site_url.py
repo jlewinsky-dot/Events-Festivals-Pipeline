@@ -9,8 +9,11 @@ BLOCKLIST = {
     "viagogo.com", "tickpick.com", "tix4cause.com", "eventticketscenter.com",
     "premiumseatsusa.com", "vipticketscanada.ca", "rateyourseats.com",
     "axs.com", "ticketweb.com", "livenation.com", "bandsintown.com",
-    # Socials
-    "twitter.com", "x.com", "yelp.com", "worldtattooevents.com", "do615.com",
+    # Socials & aggregators
+    "facebook.com", "instagram.com", "twitter.com", "x.com",
+    "yelp.com", "meetup.com", "wikipedia.org",
+    "allevents.in", "10times.com", "eventeny.com",
+    "worldtattooevents.com", "do615.com",
     "predicthq.com", "cantonfair.net", "spotify.com", "shazam.com",
     "hauntpay.com",
 }

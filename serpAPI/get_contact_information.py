@@ -43,13 +43,13 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> l
     email = result.get("email")
     if email and "[email protected]" in email.lower():
         email = None
-    return [result.get("email"), result.get("phone"), result.get("mailing_address")]
+    return [email, result.get("phone"), result.get("mailing_address")]
 
 def fill_missing_fields(event_title, location, contact_info):
-    # If all fields already filled, skip
-    fields = ["email", "phone", "mailing_address"]
-    if all(v is not None for v in contact_info):
+    # Only run if email is still missing (phone/mailing_address not used in output right now)
+    if contact_info[0] is not None:
         return contact_info
+    fields = ["email", "phone", "mailing_address"]
 
     # Search Google for contact information
     query = f"{event_title} {location} contact information"
@@ -104,13 +104,11 @@ def fill_missing_fields(event_title, location, contact_info):
     return contact_info
 
 def search_missing_fields(event_title, location, contact_info):
-    # Last resort: have GPT search the web for any still-missing fields
-    fields = ["email", "phone", "mailing_address"]
-    if all(v is not None for v in contact_info):
+    # Last resort: have GPT search the web — only if email is still missing
+    if contact_info[0] is not None:
         return contact_info
-
-    # Build a string of what's still missing
-    missing = [fields[i] for i in range(3) if contact_info[i] is None]
+    fields = ["email", "phone", "mailing_address"]
+    missing = ["email"]  # only searching for email right now
 
     response = client.chat.completions.create(
         model="gpt-4o-search-preview",

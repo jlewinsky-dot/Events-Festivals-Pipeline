@@ -14,6 +14,16 @@ def process_event(event, location):
         print(f"Failed to get organizer URL for '{key}': {e}")
         url = None
 
+    if not url:
+        return {
+            "title": key,
+            "date": event.get("date", {}).get("when"),
+            "address": ", ".join(event.get("address", [])),
+            "url": None,
+            "contact_page": None,
+            "email": None,
+        }
+
     try:
         contact_page_url = get_contact_page(url)
     except Exception as e:
@@ -38,7 +48,7 @@ def process_event(event, location):
         "url": url,
         "contact_page": contact_page_url[0],
         "email": contact_information[0],
-        "email_confidence": email_confidence(contact_information[0], key, url, address),
+        #"email_confidence": email_confidence(contact_information[0], key, url, address),
         #"phone": contact_information[1],
         #"mailing_address": contact_information[2],
     }
