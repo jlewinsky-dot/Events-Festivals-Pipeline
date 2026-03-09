@@ -6,6 +6,7 @@ import os
 import json
 from playwright.sync_api import sync_playwright
 from .get_contact_page_url import clean_html
+from .cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> l
             },
         ],
     )
+    tracker.track_openai("gpt-4.1", response.usage)
 
     result = json.loads(response.choices[0].message.content)
     email = result.get("email")
@@ -61,6 +63,7 @@ def fill_missing_fields(event_title, location, contact_info):
         "q": query,
         "api_key": os.getenv("SERPAPI_KEY"),
     }).get_dict()
+    tracker.track_serpapi()
 
     # Grab titles and snippets from top results
     search_text = []
@@ -96,6 +99,7 @@ def fill_missing_fields(event_title, location, contact_info):
             },
         ],
     )
+    tracker.track_openai("gpt-4.1", response.usage)
 
     result = json.loads(response.choices[0].message.content)
 
@@ -136,6 +140,7 @@ def search_missing_fields(event_title, location, contact_info):
             },
         ],
     )
+    tracker.track_openai("gpt-4o-search-preview", response.usage)
 
     # Parse JSON from response (no structured output support)
     text = response.choices[0].message.content.strip()

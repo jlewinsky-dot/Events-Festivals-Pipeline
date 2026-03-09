@@ -1,5 +1,5 @@
 sites = {
-    'Arkansas Portable Toilets': ['Little Rock, AR', 'Fayetteville, AR'],
+    #'Arkansas Portable Toilets': ['Little Rock, AR', 'Fayetteville, AR'],
     'Freedom Waste': ['Port St. Lucie, FL', 'Miami, FL']
     }
 '''

@@ -1,5 +1,6 @@
 from serpAPI.get_serp import get_serp_events
 from serpAPI.locations import sites
+from serpAPI.cost_tracker import tracker
 import logging
 import csv
 
@@ -23,6 +24,9 @@ def main():
             writer.writerows(serp_events)
 
         logger.info(f"Saved to {filename}")
+        tracker.print_summary()
+        tracker.reset()
+
 
 if __name__ == '__main__':
     main()

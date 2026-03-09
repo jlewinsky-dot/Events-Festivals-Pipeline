@@ -4,6 +4,7 @@ import logging
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from requests.exceptions import RequestException
+from .cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ def get_organizer_url(event_title):
             "q": query,
             "api_key": os.getenv("SERPAPI_KEY"),
         }).get_dict()
+        tracker.track_serpapi()
     except RequestException as e:
         logger.error(f"SerpAPI search failed for '{event_title}': {e}")
         return None

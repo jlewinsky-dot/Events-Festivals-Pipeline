@@ -5,7 +5,7 @@ from openai import APIError
 from .organizer_site_url import get_organizer_url
 from .get_contact_page_url import get_contact_page
 from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
-from .email_validation import email_confidence
+#from .email_validation import email_confidence
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def process_event(event, location):
 
     try:
         contact_page_url = get_contact_page(url)
-        
+
     except PlaywrightError as e:
         logger.error(f"Failed to get contact page for '{key}': {e}")
         contact_page_url = [None, None, None]

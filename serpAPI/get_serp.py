@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from .outdoor import is_outdoor_event
 from .processing import process_event
+from .cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ def get_serp_events(locations: list) -> list:
                         "api_key": os.getenv("SERPAPI_KEY"),
                         "start": start
                     }).get_dict()
+                    tracker.track_serpapi()
                 except RequestException as e:
                     logger.error(f"SerpAPI request failed for '{query}' start={start}: {e}")
                     break
@@ -62,7 +64,7 @@ def get_serp_events(locations: list) -> list:
 
     #  process all the outdoor events with thread pool
     with ThreadPoolExecutor(max_workers=5) as executor:
-        
+
         futures = {
             executor.submit(process_event, event, location): event.get("title")
             for event, location in outdoor_events
