@@ -19,7 +19,7 @@ def ctities(sites_2):
             radius = lat_long[2]
 
             BASE_URL = "https://wft-geo-db.p.rapidapi.com/v1/geo/locations"
-            url = f"{BASE_URL}/{lat}{long}/nearbyCities?radius={radius}&distanceUnit=MI&limit={limit}&minPopulation={min_population}&countryIds=US&types=CITY"
+            url = f"{BASE_URL}/{lat}{long}/nearbyCities?radius={radius}&distanceUnit=MI&limit={limit}&minPopulation={min_population}&countryIds=US&types=CITY&sort=-population"
             headers = {
                 "X-RapidAPI-Key": os.getenv('GEO_DB_API'),
                 "X-RapidAPI-Host": "wft-geo-db.p.rapidapi.com"
@@ -32,11 +32,23 @@ def ctities(sites_2):
                 for item in data.get('data'):
                     site_city[site] = site_city.get(site, [])
                     site_city[site].append(item['city'])
-
+                
             except requests.exceptions.RequestException as e:
                 print(f"Error: {e}")
 
             time.sleep(1)
-
+        while True:
+            print("-----------------------------------------------------------------")
+            manually_added = input("Are there any cities you can to manually add? (press q to quit): ")
+            if manually_added == 'q':
+                break
+            else:
+                if manually_added not in site_city[site]: 
+                    site_city[site].append(manually_added)
 
     return site_city
+
+
+
+print(ctities({'FusionSite Nashville': [[36.1381, -86.7514, 100]]}))
+
