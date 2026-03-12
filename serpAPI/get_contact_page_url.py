@@ -52,7 +52,11 @@ def clean_html(html):
     for tag in soup(["script", "style", "nav", "noscript"]):
         tag.decompose() # removes each of the following tags and their contents
 
-    return soup.get_text(separator="\n", strip=True)
+    text = soup.get_text(separator="\n", strip=True)
+    # Keep top + bottom to preserve header/footer where contact info lives
+    if len(text) > 4000:
+        text = text[:2000] + "\n...\n" + text[-2000:]
+    return text
 
 
 def get_contact_page(url):

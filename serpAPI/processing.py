@@ -39,7 +39,7 @@ def process_event(event, location):
 
     try:
         if contact_page_url[1]:  # only call LLM if we got homepage HTML
-            contact_information = extract_contact_info(key, contact_page_url[1], contact_page_url[2])
+            contact_information = extract_contact_info(key, contact_page_url[1], contact_page_url[2], organizer_url=url)
             contact_information = fill_missing_fields(key, location, contact_information)
             contact_information = search_missing_fields(key, location, contact_information)
         else:

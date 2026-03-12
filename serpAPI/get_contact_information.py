@@ -14,10 +14,12 @@ load_dotenv()
 client = OpenAI()
 
 
-def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> list:
+def extract_contact_info(event_title:str, home_html:str, contact_html=None, organizer_url=None) -> list:
     content = f"HOMEPAGE:\n{home_html}"
     if contact_html:
         content += f"\n\nCONTACT PAGE:\n{contact_html}"
+
+    url_hint = f" The organizer's website is {organizer_url}." if organizer_url else ""
 
     response = client.chat.completions.create(
         model="gpt-4.1",
@@ -26,10 +28,11 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None) -> l
             {
                 "role": "system",
                 "content": (
-                    f"You are extracting contact information for the event organizer of '{event_title}'. "
+                    f"You are extracting contact information for the event organizer of '{event_title}'.{url_hint} "
                     "Return a JSON object with these keys: email, phone, mailing_address in this exact order. "
                     "Only return info that belongs to the event organizer, NOT the venue or ticketing platform. "
                     "email must be a valid email address belonging to the event organizer, not the venue, not a ticketing platform, not a person's name. "
+                    "If multiple emails are present, prefer the one whose domain matches the organizer's website. "
                     "mailing_address must be a postal or mailing address explicitly labeled as such, not an event venue address. "
                     "Only return info you can clearly see on the page. "
                     "Do not guess or make anything up. "
