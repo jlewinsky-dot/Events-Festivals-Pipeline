@@ -1,6 +1,7 @@
 from serpAPI.get_serp import get_serp_events
-from serpAPI.locations import sites
 from serpAPI.cost_tracker import tracker
+from serpAPI.get_cities import ctities
+from serpAPI.locations import sites_2
 import logging
 import csv
 
@@ -9,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 def main():
     # for each site, I am getting serp events and writing to csv
+    sites = ctities(sites_2)
+
     for site in sites:
         logger.info(f"Starting pipeline for {site}")
         logger.info("Fetching Serp events")
