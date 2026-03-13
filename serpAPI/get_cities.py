@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 def ctities(sites_2):
     load_dotenv()
-    limit = 5
-    min_population = 2000
+    limit = 10
+    min_population = 10000
     site_city = {}
     for site in sites_2:
         logger.info(f"Fetching cities for {site}")
@@ -31,12 +31,13 @@ def ctities(sites_2):
 
                 for item in data.get('data'):
                     site_city[site] = site_city.get(site, [])
-                    site_city[site].append(item['city'])
+                    site_city[site].append(f"{item['city']}, {item['regionCode']}")
                 
             except requests.exceptions.RequestException as e:
                 print(f"Error: {e}")
 
             time.sleep(1)
+
         while True:
             print("-----------------------------------------------------------------")
             manually_added = input("Are there any cities you can to manually add? (press q to quit): ")
@@ -47,8 +48,3 @@ def ctities(sites_2):
                     site_city[site].append(manually_added)
 
     return site_city
-
-
-
-print(ctities({'FusionSite Nashville': [[36.1381, -86.7514, 100]]}))
-

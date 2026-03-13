@@ -1,10 +1,11 @@
 import serpapi
 import os
 import logging
+import time
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
-from .outdoor import is_outdoor_event
+from .relevance import filter_relevant_events
 from .processing import process_event
 from .cost_tracker import tracker
 
@@ -14,9 +15,14 @@ def get_serp_events(locations: list) -> list:
     load_dotenv()
     all_events = []
     seen = set()
-    outdoor_events = []  # collecting outdoor events first, processing concurrently after
-
+    raw_events = []  # collecting all deduplicated events first, filtering after
+    total = 0
+    count = 0
     for location in locations:
+        logger.info("------------------------")
+        logger.info(f"NOW SEARCHING {location}")
+        logger.info("------------------------")
+        '''
         queries = [  # Queries to loop through
             f"festivals {location}",
             f"fairs {location}",
@@ -26,7 +32,51 @@ def get_serp_events(locations: list) -> list:
             f"parade {location}",
             f"tailgate {location}"
         ]
-        count = 0
+        '''
+        queries = [
+            f"festivals {location}",
+            f"fairs {location}",
+            f"outdoor events {location}",
+            f"marathon {location}",
+            f"rodeo {location}",
+            f"parade {location}",
+            f"tailgate {location}",
+            f"car show {location}",
+            f"beer fest {location}",
+            f"5k run {location}",
+            f"triathlon {location}",
+            f"concert outdoor {location}",
+            f"food truck event {location}",
+            f"fireworks {location}",
+            f"block party {location}",
+            f"wine festival {location}",
+            f"bbq competition {location}",
+            f"crawfish boil {location}",
+            f"color run {location}",
+            f"mud run {location}",
+            f"obstacle course race {location}",
+            f"community event outdoor {location}",
+            f"street festival {location}",
+            f"harvest festival {location}",
+            f"christmas event outdoor {location}",
+            f"easter egg hunt {location}",
+            f"pumpkin festival {location}",
+            f"flea market {location}",
+            f"swap meet {location}",
+            f"renaissance faire {location}",
+            f"horse show {location}",
+            f"air show {location}",
+            f"county fair {location}",
+            f"state fair {location}",
+            f"fundraiser walk {location}",
+            f"charity run {location}",
+            f"music festival outdoor {location}",
+            f"craft fair outdoor {location}",
+            f"sporting tournament {location}",
+            f"lacrosse tournament {location}",
+            f"softball tournament {location}",
+            f"soccer tournament {location}",
+        ]
         for query in queries:  # loop through each query
             start = 0
             while start < 2000:
@@ -34,6 +84,7 @@ def get_serp_events(locations: list) -> list:
                     results = serpapi.GoogleSearch({
                         "engine": "google_events",
                         "q": query,
+                        "location": location,
                         "api_key": os.getenv("SERPAPI_KEY"),
                         "start": start
                     }).get_dict()
@@ -56,18 +107,26 @@ def get_serp_events(locations: list) -> list:
                         continue
 
                     seen.add(key)  # if not seen, add to seen
-
-                    if is_outdoor_event(event.get("title", "")):
-                        outdoor_events.append((event, location))
+                    raw_events.append((event, location))
+                    total += 1
+                    logger.info(f" {total} - {event['title']}")
 
                 start += 10
+                time.sleep(1)
 
-    #  process all the outdoor events with thread pool
+    logger.info(f"Duplicates skipped: {count}")
+    logger.info(f"Total unique events before relevance filter: {len(raw_events)}")
+
+    # GPT relevance filter — replaces is_outdoor_event keyword matching
+    relevant_pairs = filter_relevant_events(raw_events)
+    logger.info(f"Events after relevance filter: {len(relevant_pairs)} / {len(raw_events)}")
+
+    #  process all the relevant events with thread pool
     with ThreadPoolExecutor(max_workers=5) as executor:
 
         futures = {
             executor.submit(process_event, event, location): event.get("title")
-            for event, location in outdoor_events
+            for event, location in relevant_pairs
         }
 
         # as_completed gives us results as they finish, not in the order we submitted them
@@ -79,5 +138,5 @@ def get_serp_events(locations: list) -> list:
                 all_events.append(result)
             except Exception as e:
                 logger.error(f"Event processing failed for '{title}': {type(e).__name__}: {e}")
-    logger.info(f"Duplicates skipped: {count}")
+
     return all_events

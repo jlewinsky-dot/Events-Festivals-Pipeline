@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 def main():
     # for each site, I am getting serp events and writing to csv
     sites = ctities(sites_2)
-
+    #sites = {'FusionSite Nashville': ['Nashville, TN', 'Murfreesboro, TN', 'Franklin, TN', 'Brentwood, TN', 'Clarksville, TN'],
+             #'Stamback Services': ['Tucson, AZ', 'Marana, AZ', 'Oro Valley, AZ', 'Sahuarita, AZ', 'Wilcox, AZ'],
+             #'Event Solutions': ['Lafayette, LA', 'Broussard, LA', 'Youngsville, LA', 'Carencro, LA', 'Scott, LA', 'Lake Charles, LA ']}
     for site in sites:
-        logger.info(f"Starting pipeline for {site}")
+        logger.info(f"Starting pipeline for {site} - {sites[site]}")
         logger.info("Fetching Serp events")
         serp_events = get_serp_events(sites[site])
         logger.info("Finished fetching Serp events")
