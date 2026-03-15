@@ -106,7 +106,7 @@ def fill_missing_fields(event_title, location, contact_info):
             },
         ],
     )
-    tracker.track_openai("gpt-4.1", response.usage)
+    tracker.track_openai("gpt-5", response.usage)
 
     result = json.loads(response.choices[0].message.content)
 
