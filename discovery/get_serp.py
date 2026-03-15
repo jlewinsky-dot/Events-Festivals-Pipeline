@@ -1,5 +1,6 @@
 import serpapi
 import os
+import re
 import logging
 import time
 from dotenv import load_dotenv
@@ -10,6 +11,15 @@ from analysis.processing import process_event
 from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
+
+
+def normalize_title(title):
+    title = title.lower()
+    title = re.sub(r'20\d{2}', '', title)           # strip years (2024, 2025, 2026, etc.)
+    title = re.sub(r'[^a-z0-9 ]', '', title)         # strip punctuation
+    title = re.sub(r'\s+', ' ', title).strip()       # collapse whitespace
+    return title
+
 
 def get_serp_events(locations: list) -> list:
     load_dotenv()
@@ -99,7 +109,7 @@ def get_serp_events(locations: list) -> list:
                     break
 
                 for event in events:
-                    key = event.get("title")  # Creating key for deduplicaton amoung queries
+                    key = normalize_title(event.get("title", ""))  # Creating key for deduplication among queries
 
                     if key in seen:
                         count += 1

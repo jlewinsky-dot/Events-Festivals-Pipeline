@@ -59,29 +59,33 @@ def clean_html(html):
     return text
 
 
-def get_contact_page(url):
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=25000)
-            home_html = page.content() # save homepage HTML
-            page.close()
-            soup = BeautifulSoup(home_html, "html.parser") # page.content() is HTML being passed in
-            # 1.) look for a contact link in the homepage
-            contact_url = find_contact_link(soup, url)
-            # 2.) if number 1 failed, try common paths
-            if not contact_url:
-                contact_url = try_common_paths(browser, base_url=url)
-            # 3.) fetch the contact page
-            contact_html = None
-            if contact_url and contact_url != url:
+def get_contact_page(url, max_retries=2):
+    for attempt in range(max_retries):
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
                 page = browser.new_page()
-                page.goto(contact_url, timeout=25000)
-                contact_html = page.content()
+                page.goto(url, timeout=25000)
+                home_html = page.content() # save homepage HTML
                 page.close()
-            browser.close()
-        return [contact_url, clean_html(home_html), clean_html(contact_html) if contact_html else None]
-    except PlaywrightError as e:
-        logger.error(f"Error fetching {url}: {e}")
-        return [None, None, None]
+                soup = BeautifulSoup(home_html, "html.parser") # page.content() is HTML being passed in
+                # 1.) look for a contact link in the homepage
+                contact_url = find_contact_link(soup, url)
+                # 2.) if number 1 failed, try common paths
+                if not contact_url:
+                    contact_url = try_common_paths(browser, base_url=url)
+                # 3.) fetch the contact page
+                contact_html = None
+                if contact_url and contact_url != url:
+                    page = browser.new_page()
+                    page.goto(contact_url, timeout=25000)
+                    contact_html = page.content()
+                    page.close()
+                browser.close()
+            return [contact_url, clean_html(home_html), clean_html(contact_html) if contact_html else None]
+        except PlaywrightError as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} failed for {url}, retrying: {e}")
+            else:
+                logger.error(f"Error fetching {url} after {max_retries} attempts: {e}")
+                return [None, None, None]
