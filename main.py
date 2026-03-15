@@ -23,6 +23,7 @@ def main():
         filename = f"{site.replace(' ', '_').lower()}_events.csv"
         with open(filename, 'w', newline="") as f:
             writer = csv.DictWriter(f, fieldnames=["title", "date", "address", "url", "contact_page", "email",
+                                                   "sells_food", "sells_alcohol", "sells_vip", "profitability"
                                                    #"email_confidence", "phone", "mailing_address"
                                                    ])
             writer.writeheader()

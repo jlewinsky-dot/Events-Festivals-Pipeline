@@ -5,6 +5,7 @@ from openai import APIError
 from .organizer_site_url import get_organizer_url
 from .get_contact_page_url import get_contact_page
 from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
+from .profitability import classify_profitability
 #from .email_validation import email_confidence
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,9 @@ def process_event(event, location):
             "url": None,
             "contact_page": None,
             "email": None,
+            "sells_food": None,
+            "sells_alcohol": None,
+            "sells_vip": None,
         }
 
     try:
@@ -35,13 +39,14 @@ def process_event(event, location):
 
     except PlaywrightError as e:
         logger.error(f"Failed to get contact page for '{key}': {e}")
-        contact_page_url = [None, None, None]
+        contact_information = [None, None, None, None, None, None]
 
     try:
         if contact_page_url[1]:  # only call LLM if we got homepage HTML
             contact_information = extract_contact_info(key, contact_page_url[1], contact_page_url[2], organizer_url=url)
             contact_information = fill_missing_fields(key, location, contact_information)
             contact_information = search_missing_fields(key, location, contact_information)
+            profitability = classify_profitability(key, location)
         else:
             contact_information = [None, None, None]
     except APIError as e:
@@ -55,7 +60,8 @@ def process_event(event, location):
         "url": url,
         "contact_page": contact_page_url[0],
         "email": contact_information[0],
-        #"email_confidence": email_confidence(contact_information[0], key, url, address),
-        #"phone": contact_information[1],
-        #"mailing_address": contact_information[2],
-    }
+        "sells_food": contact_information[3],
+        "sells_alcohol": contact_information[4],
+        "sells_vip": contact_information[5],
+        "profitability": profitability,
+}

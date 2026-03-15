@@ -22,18 +22,23 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None, orga
     url_hint = f" The organizer's website is {organizer_url}." if organizer_url else ""
 
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         response_format={"type": "json_object"},
         messages=[
             {
                 "role": "system",
                 "content": (
                     f"You are extracting contact information for the event organizer of '{event_title}'.{url_hint} "
-                    "Return a JSON object with these keys: email, phone, mailing_address in this exact order. "
+                    "Return a JSON object with these keys: email, phone, mailing_address, sells_food, sells_alcohol, sells_vip in this exact order. "
                     "Only return info that belongs to the event organizer, NOT the venue or ticketing platform. "
                     "email must be a valid email address belonging to the event organizer, not the venue, not a ticketing platform, not a person's name. "
                     "If multiple emails are present, prefer the one whose domain matches the organizer's website. "
                     "mailing_address must be a postal or mailing address explicitly labeled as such, not an event venue address. "
+                    "sells_food: true if the event sells or serves food (food vendors, food trucks, food included with ticket, etc). "
+                    "Do NOT say true just because food is mentioned — phrases like 'no outside food allowed' or 'food not permitted' do not count. "
+                    "sells_alcohol: true if the event sells or serves alcohol (beer, wine, cocktails, drink tickets, beer garden, etc). "
+                    "Do NOT say true just because alcohol is mentioned — phrases like 'no alcohol allowed' or 'alcohol-free event' do not count. "
+                    "sells_vip: true if the event sells VIP tickets, VIP passes, or VIP packages. "
                     "Only return info you can clearly see on the page. "
                     "Do not guess or make anything up. "
                     "Use null for any field you cannot find."
@@ -45,14 +50,13 @@ def extract_contact_info(event_title:str, home_html:str, contact_html=None, orga
             },
         ],
     )
-    tracker.track_openai("gpt-4.1", response.usage)
+    tracker.track_openai("gpt-5", response.usage)
 
     result = json.loads(response.choices[0].message.content)
     email = result.get("email")
     if email and "[email protected]" in email.lower():
         email = None
-    return [email, result.get("phone"), result.get("mailing_address")]
-
+    return [email, result.get("phone"), result.get("mailing_address"), result.get("sells_food"), result.get("sells_alcohol"), result.get("sells_vip")]
 def fill_missing_fields(event_title, location, contact_info):
     # Only run if email is still missing (phone/mailing_address not used in output right now)
     if contact_info[0] is not None:
@@ -80,7 +84,7 @@ def fill_missing_fields(event_title, location, contact_info):
 
     # Ask GPT to extract all missing fields from search results
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         response_format={"type": "json_object"},
         messages=[
             {
@@ -121,7 +125,7 @@ def search_missing_fields(event_title, location, contact_info):
     missing = ["email"]  # only searching for email right now
 
     response = client.chat.completions.create(
-        model="gpt-4o-search-preview",
+        model="gpt-5-search-api",
         web_search_options={},
         messages=[
             {
@@ -143,7 +147,7 @@ def search_missing_fields(event_title, location, contact_info):
             },
         ],
     )
-    tracker.track_openai("gpt-4o-search-preview", response.usage)
+    tracker.track_openai("gpt-5-search-api", response.usage)
 
     # Parse JSON from response (no structured output support)
     text = response.choices[0].message.content.strip()
