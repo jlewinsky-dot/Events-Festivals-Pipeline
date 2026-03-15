@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from requests.exceptions import RequestException
-from .cost_tracker import tracker
+from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 

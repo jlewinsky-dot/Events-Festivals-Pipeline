@@ -1,7 +1,7 @@
-from serpAPI.get_serp import get_serp_events
-from serpAPI.cost_tracker import tracker
-from serpAPI.get_cities import ctities
-from serpAPI.locations import sites_2
+from discovery.get_serp import get_serp_events
+from config.cost_tracker import tracker
+from discovery.get_cities import ctities
+from config.locations import sites_2
 import logging
 import csv
 

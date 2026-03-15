@@ -5,24 +5,30 @@ A lead generation pipeline that discovers outdoor festivals, fairs, and events n
 ## Architecture
 
 ```
-locations.py (company → cities)
+config/locations.py (company → lat/long coordinates)
        │
        ▼
-get_serp.py (Google Events search per city)
+discovery/get_cities.py (GeoDB API → city names from coordinates)
        │
        ▼
-outdoor.py (filter: is it an outdoor event?)
+discovery/get_serp.py (Google Events search per city)
        │
        ▼
-organizer_site_url.py (Google Search → organizer website)
+discovery/relevance.py (GPT filter: is it relevant for porta potty rental?)
        │
        ▼
-get_contact_page_url.py (Playwright → scrape homepage & contact page)
+scraping/organizer_site_url.py (Google Search → organizer website)
        │
        ▼
-get_contact_information.py (GPT-4.1 → extract email/phone/address)
-       │  ├─ fill_missing_fields (SerpAPI + GPT-4.1 for gaps)
-       │  └─ search_missing_fields (GPT-4o web search as last resort)
+scraping/get_contact_page_url.py (Playwright → scrape homepage & contact page)
+       │
+       ▼
+scraping/get_contact_information.py (GPT-5 → extract email/phone/address)
+       │  ├─ fill_missing_fields (SerpAPI + GPT-5 for gaps)
+       │  └─ search_missing_fields (GPT-5-search-api as last resort)
+       ▼
+analysis/profitability.py (GPT → classify event profitability)
+       │
        ▼
 main.py (write CSV per company)
 ```
@@ -60,7 +66,7 @@ OPENAI_API_KEY=your_openai_api_key
 python main.py
 ```
 
-This will loop through each company in `serpAPI/locations.py`, search for outdoor events in their service areas, and output a CSV per company (e.g. `a_clean_portoco_events.csv`).
+This will loop through each company in `config/locations.py`, search for outdoor events in their service areas, and output a CSV per company (e.g. `a_clean_portoco_events.csv`).
 
 ## Output
 
@@ -74,28 +80,45 @@ Each CSV contains the following columns:
 | `url` | Organizer's official website |
 | `contact_page` | URL of the organizer's contact page |
 | `email` | Organizer email address |
-| `phone` | Organizer phone number |
-| `mailing_address` | Organizer postal/mailing address |
+| `sells_food` | Whether the event sells/serves food |
+| `sells_alcohol` | Whether the event sells/serves alcohol |
+| `sells_vip` | Whether the event sells VIP tickets |
+| `profitability` | Event profitability potential (high/medium/low) |
 
 ## Project Structure
 
 ```
-├── main.py                          # Pipeline orchestrator
-├── requirements.txt                 # Python dependencies
-├── .env                             # API keys (not tracked)
+├── main.py                                # Pipeline orchestrator
+├── requirements.txt                       # Python dependencies
+├── .env                                   # API keys (not tracked)
 ├── .gitignore
-└── serpAPI/
+├── config/
+│   ├── __init__.py
+│   ├── locations.py                       # Company → lat/long coordinate mappings
+│   └── cost_tracker.py                    # Thread-safe API cost tracking
+├── discovery/
+│   ├── __init__.py
+│   ├── get_cities.py                      # GeoDB API → city names from coordinates
+│   ├── get_serp.py                        # SerpAPI Google Events search
+│   └── relevance.py                       # GPT relevance filtering
+├── scraping/
+│   ├── __init__.py
+│   ├── organizer_site_url.py              # Find organizer website via Google Search
+│   ├── get_contact_page_url.py            # Scrape homepage & contact page with Playwright
+│   └── get_contact_information.py         # Extract contact info with GPT-5
+├── analysis/
+│   ├── __init__.py
+│   ├── processing.py                      # Per-event processing orchestrator
+│   └── profitability.py                   # GPT profitability classification
+└── inactive/
     ├── __init__.py
-    ├── locations.py                 # Company → city mappings
-    ├── outdoor.py                   # Event keyword filtering
-    ├── get_serp.py                  # SerpAPI Google Events search
-    ├── organizer_site_url.py        # Find organizer website via Google Search
-    ├── get_contact_page_url.py      # Scrape homepage & contact page with Playwright
-    └── get_contact_information.py   # Extract contact info with GPT-4.1
+    ├── outdoor.py                         # Legacy keyword-based event filtering
+    └── email_validation.py                # Email confidence scoring (disabled)
 ```
 
 ## APIs & Services
 
 - **[SerpAPI](https://serpapi.com/)** — Google Events and Google Search
-- **[OpenAI](https://openai.com/)** — GPT-4.1 and GPT-4o-search-preview for contact extraction
+- **[OpenAI](https://openai.com/)** — GPT-5 and GPT-5-search-api for contact extraction, relevance filtering, and profitability classification
 - **[Playwright](https://playwright.dev/)** — Headless browser for scraping organizer websites
+- **[GeoDB Cities API](https://rapidapi.com/wirefreethought/api/geodb-cities)** — City lookup by lat/long coordinates

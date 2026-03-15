@@ -2,9 +2,9 @@ import logging
 from requests.exceptions import RequestException
 from playwright.sync_api import Error as PlaywrightError
 from openai import APIError
-from .organizer_site_url import get_organizer_url
-from .get_contact_page_url import get_contact_page
-from .get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
+from scraping.organizer_site_url import get_organizer_url
+from scraping.get_contact_page_url import get_contact_page
+from scraping.get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
 from .profitability import classify_profitability
 #from .email_validation import email_confidence
 

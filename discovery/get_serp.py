@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from .relevance import filter_relevant_events
-from .processing import process_event
-from .cost_tracker import tracker
+from analysis.processing import process_event
+from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ def get_serp_events(locations: list) -> list:
             f"5k run {location}",
             f"triathlon {location}",
             f"concert outdoor {location}",
-            f"food truck event {location}",
+            #f"food truck event {location}",
             #f"fireworks {location}",
             #f"block party {location}",
             f"wine festival {location}",

@@ -2,7 +2,7 @@ import json
 import logging
 from openai import OpenAI
 from dotenv import load_dotenv
-from .cost_tracker import tracker
+from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
 
