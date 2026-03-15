@@ -36,10 +36,12 @@ def process_event(event, location):
 
     try:
         contact_page_url = get_contact_page(url)
-
     except PlaywrightError as e:
         logger.error(f"Failed to get contact page for '{key}': {e}")
-        contact_information = [None, None, None, None, None, None]
+        contact_page_url = [None, None, None]
+
+    contact_information = [None, None, None, None, None, None]
+    profitability = None
 
     try:
         if contact_page_url[1]:  # only call LLM if we got homepage HTML
@@ -47,12 +49,9 @@ def process_event(event, location):
             contact_information = fill_missing_fields(key, location, contact_information)
             contact_information = search_missing_fields(key, location, contact_information)
             profitability = classify_profitability(key, location)
-        else:
-            contact_information = [None, None, None]
     except APIError as e:
         logger.error(f"Failed to extract contact info for '{key}': {e}")
-        contact_information = [None, None, None]
-    address = ", ".join(event.get("address", []))
+
     return {
         "title": key,
         "date": event.get("date", {}).get("when"),
@@ -64,4 +63,4 @@ def process_event(event, location):
         "sells_alcohol": contact_information[4],
         "sells_vip": contact_information[5],
         "profitability": profitability,
-}
+    }
