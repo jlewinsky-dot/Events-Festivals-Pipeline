@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 PRICING = {
     "gpt-5": {"input": 1.25 / 1_000_000, "output": 10.00 / 1_000_000},
     "gpt-5-search-api": {"input": 1.25 / 1_000_000, "output": 10.00 / 1_000_000, "search_call": 10.00 / 1_000},
-    "gpt-4.1": {"input": 2.00 / 1_000_000, "output": 8.00 / 1_000_000},
-    "gpt-4o-search-preview": {"input": 2.50 / 1_000_000, "output": 10.00 / 1_000_000, "search_call": 30.00 / 1_000},
 }
 
 SERPAPI_COST_PER_CALL = 275.00 / 30_000  # ~$0.00917
@@ -29,8 +27,6 @@ class CostTracker:
             self.openai_calls = {
                 "gpt-5": {"input_tokens": 0, "output_tokens": 0, "calls": 0},
                 "gpt-5-search-api": {"input_tokens": 0, "output_tokens": 0, "calls": 0},
-                "gpt-4.1": {"input_tokens": 0, "output_tokens": 0, "calls": 0},
-                "gpt-4o-search-preview": {"input_tokens": 0, "output_tokens": 0, "calls": 0},
             }
             # SerpAPI calls
             self.serpapi_calls = 0

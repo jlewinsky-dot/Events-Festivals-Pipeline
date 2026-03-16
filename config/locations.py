@@ -1,5 +1,5 @@
 sites_2 = {
-    'FusionSite Nashville': [[36.1380749, -86.751475, 50]]
+    'FusionSite Nashville': [[36.1380749, -86.751475, 60]]
 }
 
 """

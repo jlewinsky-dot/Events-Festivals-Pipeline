@@ -12,7 +12,7 @@ client = OpenAI()
 
 def classify_profitability(event_title, location):
     response = client.chat.completions.create(
-        model="gpt-4o-search-preview",
+        model="gpt-5-search-api",
         web_search_options={},
         messages=[
             {
@@ -32,7 +32,7 @@ def classify_profitability(event_title, location):
             },
         ],
     )
-    tracker.track_openai("gpt-4o-search-preview", response.usage)
+    tracker.track_openai("gpt-5-search-api", response.usage)
 
     text = response.choices[0].message.content.strip()
     text = text.replace("```json", "").replace("```", "").strip()

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 def ctities(sites_2):
     load_dotenv()
-    limit = 10
+    limit = 5
     min_population = 10000
     site_city = {}
     for site in sites_2:

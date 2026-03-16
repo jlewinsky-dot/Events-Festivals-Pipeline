@@ -63,14 +63,14 @@ def filter_relevant_events(event_pairs: list[tuple]) -> list[tuple]:
     event_list = build_event_list(event_pairs)
 
     response = client.chat.completions.create(
-        model="gpt-4.1",
+        model="gpt-5",
         response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": event_list},
         ],
     )
-    tracker.track_openai("gpt-4.1", response.usage)
+    tracker.track_openai("gpt-5", response.usage)
 
     try:
         result = json.loads(response.choices[0].message.content)
