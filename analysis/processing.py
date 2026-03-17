@@ -3,7 +3,7 @@ from requests.exceptions import RequestException
 from playwright.sync_api import Error as PlaywrightError
 from openai import APIError
 from scraping.organizer_site_url import get_organizer_url
-from scraping.get_contact_page_url import get_contact_page
+from scraping.get_pages import get_contact_page
 from scraping.get_contact_information import extract_contact_info, fill_missing_fields, search_missing_fields
 #from .email_validation import email_confidence
 

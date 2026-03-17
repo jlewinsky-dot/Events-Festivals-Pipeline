@@ -5,7 +5,7 @@ import serpapi
 import os
 import json
 from playwright.sync_api import sync_playwright
-from .get_contact_page_url import clean_html
+from .get_pages import clean_html
 from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
