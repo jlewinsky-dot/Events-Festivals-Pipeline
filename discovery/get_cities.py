@@ -48,3 +48,4 @@ def ctities(sites_2):
                     site_city[site].append(manually_added)
 
     return site_city
+

@@ -8,7 +8,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from requests.exceptions import RequestException
 from .relevance import filter_relevant_events
 from analysis.processing import process_event
+from analysis.profitability import classify_profitability_batch
 from config.cost_tracker import tracker
+from .ticketmaster import get_tickmaster_events
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +34,36 @@ def get_serp_events(locations: list) -> list:
         logger.info("------------------------")
         logger.info(f"NOW SEARCHING {location}")
         logger.info("------------------------")
-        '''
         queries = [  # Queries to loop through
             f"festivals {location}",
+            f"festival {location}",
             f"fairs {location}",
             f"outdoor events {location}",
             f"marathon {location}",
             f"rodeo {location}",
             f"parade {location}",
-            f"tailgate {location}"
+            f"tailgate {location}",
+            f"food festival {location}",
+            f"music festival {location}",
+            f"beer festival {location}",
+            f"wine festival {location}",
+            f"street festival {location}",
+            f"cultural festival {location}",
+            f"harvest festival {location}",
+            f"fall festival {location}",
+            f"spring festival {location}",
+            f"county fair {location}",
+            f"state fair {location}",
+            f"renaissance faire {location}",
+            f"bbq festival {location}",
+            f"crawfish festival {location}",
+            f"seafood festival {location}",
+            f"chili cookoff {location}",
+            f"ribfest {location}",
+            f"art festival outdoor {location}",
+            f"fiesta {location}",
+            f"carnival {location}",
+            f"jubilee {location}",
         ]
         '''
         queries = [
@@ -87,6 +110,7 @@ def get_serp_events(locations: list) -> list:
             #f"softball tournament {location}",
             #f"soccer tournament {location}",
         ]
+        '''
         for query in queries:  # loop through each query
             start = 0
             while start < 2000:
@@ -124,6 +148,18 @@ def get_serp_events(locations: list) -> list:
                 start += 10
                 time.sleep(1)
 
+    try:
+        ticketmaster_events = get_tickmaster_events(locations)
+        for event, location in ticketmaster_events:
+            key = normalize_title(event.get("title", ""))
+            if key in seen:
+                count += 1
+                continue
+            seen.add(key)
+            raw_events.append((event, location))
+            total += 1
+    except Exception as e:
+        logger.error(f"Ticketmaster fetch failed: {e}") 
     logger.info(f"Duplicates skipped: {count}")
     logger.info(f"Total unique events before relevance filter: {len(raw_events)}")
 
@@ -148,5 +184,8 @@ def get_serp_events(locations: list) -> list:
                 all_events.append(result)
             except Exception as e:
                 logger.error(f"Event processing failed for '{title}': {type(e).__name__}: {e}")
+
+    # Batch classify profitability with gpt-4.1-mini
+    all_events = classify_profitability_batch(all_events)
 
     return all_events
