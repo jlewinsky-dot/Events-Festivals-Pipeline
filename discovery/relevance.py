@@ -1,8 +1,10 @@
 import json
 import logging
+
 from openai import OpenAI
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from config.cost_tracker import tracker
 
 logger = logging.getLogger(__name__)
@@ -68,8 +70,9 @@ SYSTEM_PROMPT = (
 def build_event_list(event_pairs):
     lines = []
     for i, (event, location) in enumerate(event_pairs):
-        title = event.get("title", "")
+        title = event.get("title", "").replace("\x00", "").replace("\u0000", "")
         address = ", ".join(event.get("address", []))
+        address = address.replace("\x00", "").replace("\u0000", "")
         lines.append(f"{i+1}. {title} | {address} | Market: {location}")
     return "\n".join(lines)
 
@@ -78,15 +81,19 @@ def _filter_batch(batch, batch_num, total_batches):
     logger.info(f"Relevance filter: batch {batch_num}/{total_batches} ({len(batch)} events)")
     event_list = build_event_list(batch)
 
-    response = client.chat.completions.create(
-        model="gpt-5",
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": event_list},
-        ],
-    )
-    tracker.track_openai("gpt-5", response.usage)
+    try:
+        response = client.chat.completions.create(
+            model="gpt-5",
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": event_list},
+            ],
+        )
+        tracker.track_openai("gpt-5", response.usage)
+    except Exception as e:
+        logger.error(f"Relevance API call failed for batch {batch_num}: {e}")
+        return batch
 
     try:
         result = json.loads(response.choices[0].message.content)
@@ -105,7 +112,7 @@ def filter_relevant_events(event_pairs, batch_size=200):
     total_batches = len(batches)
     relevant = []
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         futures = {
             executor.submit(_filter_batch, batch, i + 1, total_batches): i
             for i, batch in enumerate(batches)

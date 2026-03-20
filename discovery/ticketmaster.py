@@ -3,6 +3,7 @@ import os
 import json
 from dotenv import load_dotenv
 import logging
+from settings.stngs import TICKET_MASTER_RADIUS
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ def get_tickmaster_events(sites):
             response = requests.get("https://app.ticketmaster.com/discovery/v2/events.json", params={
                 "city": city.strip(),
                 "stateCode": state.strip(),
-                "radius": 50,
+                "radius": TICKET_MASTER_RADIUS,
                 "unit": "miles",
                 "countryCode": "US",
                 "size": 200,

@@ -3,12 +3,13 @@ from dotenv import load_dotenv
 import requests
 import time
 import logging
+from settings.stngs import GET_CITIES_LIMIT, MIN_POPULATION
 logger = logging.getLogger(__name__)
 
 def ctities(sites_2):
     load_dotenv()
-    limit = 5
-    min_population = 10000
+    limit = GET_CITIES_LIMIT
+    min_population = MIN_POPULATION
     site_city = {}
     for site in sites_2:
         logger.info(f"Fetching cities for {site}")
@@ -38,14 +39,14 @@ def ctities(sites_2):
 
             time.sleep(1)
 
-        while True:
-            print("-----------------------------------------------------------------")
-            manually_added = input("Are there any cities you can to manually add? (press q to quit): ")
-            if manually_added == 'q':
-                break
-            else:
-                if manually_added not in site_city[site]: 
-                    site_city[site].append(manually_added)
+        # while True:
+        #     print("-----------------------------------------------------------------")
+        #     manually_added = input("Are there any cities you can to manually add? (press q to quit): ")
+        #     if manually_added == 'q':
+        #         break
+        #     else:
+        #         if manually_added not in site_city[site]: 
+        #             site_city[site].append(manually_added)
 
     return site_city
 

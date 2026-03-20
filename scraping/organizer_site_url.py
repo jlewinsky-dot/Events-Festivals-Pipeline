@@ -14,13 +14,25 @@ BLOCKLIST = {
     "viagogo.com", "tickpick.com", "tix4cause.com", "eventticketscenter.com",
     "premiumseatsusa.com", "vipticketscanada.ca", "rateyourseats.com",
     "axs.com", "ticketweb.com", "livenation.com", "bandsintown.com",
+    "ticketbud.com", "gofevo.com",
     # Socials & aggregators
-    "facebook.com", "instagram.com", "twitter.com", "x.com",
+    "facebook.com", "instagram.com", "twitter.com", "x.com", "tiktok.com",
     "yelp.com", "meetup.com", "wikipedia.org",
     "allevents.in", "10times.com", "eventeny.com",
     "worldtattooevents.com", "do615.com",
     "predicthq.com", "cantonfair.net", "spotify.com", "shazam.com",
-    "hauntpay.com",
+    "hauntpay.com", "songkick.com", "unation.com",
+    # Race aggregators
+    "runsignup.com", "findarace.com", "ultrasignup.com",
+    # Tourism boards
+    "miamiandbeaches.com", "visitorlando.com", "visitwestvolusia.com", "visitspacecoast.com",
+    # Fundraising platforms
+    "gofundme.com", "give.adventhealth.com",
+    # News & media
+    "spacecoastdaily.com", "miamitimesonline.com", "sflcn.com", "palmbeachdailynews.com",
+    "mommypoppins.com", "wjrr.iheart.com",
+    # Theme parks & stadiums (permanent restrooms)
+    "universalorlando.com", "seaworld.com",
 }
 
 # This function is just searching for the event organizers or realated event website
