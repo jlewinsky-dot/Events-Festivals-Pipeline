@@ -1,0 +1,6 @@
+google-search-results
+python-dotenv
+openai
+playwright
+beautifulsoup4
+requests

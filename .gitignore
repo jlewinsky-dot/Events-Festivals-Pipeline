@@ -1,0 +1,36 @@
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Real service areas
+config/locations.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# Output CSVs (may contain client data)
+*.csv
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Test results
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Private backup of the old locations file (partner list). Delete when no longer needed.
+config/locations_backup.py

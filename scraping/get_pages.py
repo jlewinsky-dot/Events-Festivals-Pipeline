@@ -1,0 +1,135 @@
+import logging
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from playwright.sync_api import sync_playwright, Error as PlaywrightError
+
+logger = logging.getLogger(__name__)
+
+
+CONTACT_KEYWORDS = [
+    "contact", "get in touch", "reach us", "connect", "reach out",
+    "talk to us", "email us", "call us", "get ahold", "inquiries",
+    "inquiry", "support", "help", "info",
+]
+
+CONTACT_PATHS = [
+    "/contact", "/contact-us", "/contact_us",
+    "/connect", "/reach-out", "/get-in-touch",
+    "/info", "/information", "/support",
+    "/help", "/inquiries",
+]
+
+ABOUT_KEYWORDS = [
+    "about", "who we are", "our story", "our team", "meet the team",
+    "faq", "faqs", "frequently asked", "overview", "mission",
+]
+
+ABOUT_PATHS = [
+    "/about", "/about-us", "/about_us",
+    "/who-we-are", "/our-story", "/our-team",
+    "/faq", "/faqs", "/frequently-asked-questions",
+    "/overview", "/mission",
+]
+
+
+
+def find_contact_link(soup, base_url):
+    for a in soup.find_all("a", href=True): # Grab every <a> tag on the page with href
+        text = a.get_text(strip=True).lower() # grabs clickable text ("Contact us")
+        href = a["href"].lower() # actual URL path
+
+        for kw in CONTACT_KEYWORDS:
+            if kw in text or kw in href: # if any of the contact keywords appear in either the text or link, return link
+                return urljoin(base_url, a["href"])
+
+    return None # Else return none
+
+def find_about_link(soup, base_url):
+    for a in soup.find_all("a", href=True): # Grab every <a> tag on the page with href
+        text = a.get_text(strip=True).lower() # grabs clickable text ("Contact us")
+        href = a["href"].lower() # actual URL path
+
+        for kw in ABOUT_KEYWORDS:
+            if kw in text or kw in href: # if any of the contact keywords appear in either the text or link, return link
+                return urljoin(base_url, a["href"])
+
+    return None # Else return none
+
+
+def try_contact_common_paths(browser, base_url): # Looking through common contact slugs if no contact link from find contact link
+    for path in CONTACT_PATHS:
+        url = urljoin(base_url, path)
+        page = browser.new_page() # Playwright is the browser here
+        resp = page.goto(url, timeout=10000) # attempts to go to page to see if exists
+        status = resp.status if resp else 0 # get status
+        page.close() # close tab
+        if status == 200: # If we get a contact page, return url
+            return url
+
+    return None # Else return none
+
+def try_contact_about_paths(browser, base_url): # Looking through common contact slugs if no contact link from find contact link
+    for path in ABOUT_PATHS:
+        url = urljoin(base_url, path)
+        page = browser.new_page() # Playwright is the browser here
+        resp = page.goto(url, timeout=10000) # attempts to go to page to see if exists
+        status = resp.status if resp else 0 # get status
+        page.close() # close tab
+        if status == 200: # If we get a contact page, return url
+            return url
+
+    return None # Else return none
+
+
+def clean_html(html):
+    soup = BeautifulSoup(html, "html.parser")
+
+    for tag in soup(["script", "style", "nav", "noscript"]):
+        tag.decompose() # removes each of the following tags and their contents
+
+    text = soup.get_text(separator="\n", strip=True)
+    # Keep top + bottom to preserve header/footer where contact info lives
+    if len(text) > 4000:
+        text = text[:2000] + "\n...\n" + text[-2000:]
+    return text
+
+
+def get_contact_page(url, max_retries=2):
+    for attempt in range(max_retries):
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page()
+                page.goto(url, timeout=25000)
+                home_html = page.content() # save homepage HTML
+                page.close()
+                soup = BeautifulSoup(home_html, "html.parser") # page.content() is HTML being passed in
+                # 1.) look for a contact link in the homepage
+                contact_url = find_contact_link(soup, url)
+                about_url = find_about_link(soup, url)
+                # 2.) if number 1 failed, try common paths
+                if not contact_url:
+                    contact_url = try_contact_common_paths(browser, base_url=url)
+                if not about_url:
+                    about_url = try_contact_about_paths(browser, base_url=url)
+                # 3.) fetch the contact page
+                contact_html = None
+                about_html = None
+                if contact_url and contact_url != url:
+                    page = browser.new_page()
+                    page.goto(contact_url, timeout=25000)
+                    contact_html = page.content()
+                    page.close()
+                if about_url and about_url != url:
+                    page = browser.new_page()
+                    page.goto(about_url, timeout=25000)
+                    about_html = page.content()
+                    page.close()
+                browser.close()
+            return [contact_url, clean_html(home_html), clean_html(contact_html) if contact_html else None, clean_html(about_html) if about_html else None]
+        except PlaywrightError as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"Attempt {attempt + 1} failed for {url}, retrying: {e}")
+            else:
+                logger.error(f"Error fetching {url} after {max_retries} attempts: {e}")
+                return [None, None, None, None]          
